@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTheme } from "@/components/theme-provider";
 import { 
   Store, Bell, User, ShoppingCart, Package, TrendingUp, Clock, Plus,
-  Moon, Sun, Eye, CircleAlert, CloudAlert, X,
+  Moon, Sun, Eye, CircleAlert, X,
   Info, MessageCircleWarning, TriangleAlert,
   MessageSquareWarning, OctagonAlert, BellRing
 } from "lucide-react";
@@ -269,12 +269,14 @@ export default function DashboardPage() {
                           </MessageSquareWarning>
                           <TriangleAlert>
                             <X>Cancelar</X>
-                            <CloudAlert
+                            <Button
                               onClick={() => markAsPaidMutation.mutate(sale.id)}
                               disabled={markAsPaidMutation.isPending}
+                              variant="default"
+                              size="sm"
                             >
                               {markAsPaidMutation.isPending ? "Confirmando..." : "Confirmar"}
-                            </CloudAlert>
+                            </Button>
                           </TriangleAlert>
                         </Info>
                       </CircleAlert>

@@ -18,6 +18,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   setupAuth(app);
 
+
   // Product routes
   app.get("/api/products", requireAuth, async (req: any, res) => {
     try {
