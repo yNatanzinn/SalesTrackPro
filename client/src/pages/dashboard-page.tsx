@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
@@ -54,7 +54,7 @@ export default function DashboardPage() {
     return { startDate: startDate.toISOString(), endDate: now.toISOString() };
   };
 
-  const dateRange = getDateRange(period);
+  const dateRange = useMemo(() => getDateRange(period), [period]);
 
   // Fetch analytics data
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -63,18 +63,24 @@ export default function DashboardPage() {
       const res = await fetch(`/api/analytics/stats?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`, {
         credentials: "include",
       });
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`);
+      }
       return await res.json();
     },
+    enabled: !!user,
   });
 
   // Fetch pending sales
   const { data: pendingSales, isLoading: pendingLoading } = useQuery({
     queryKey: ["/api/sales/pending"],
+    enabled: !!user,
   });
 
   // Fetch products
   const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: ["/api/products"],
+    enabled: !!user,
   });
 
   // Mark sale as paid mutation

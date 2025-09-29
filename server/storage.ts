@@ -118,7 +118,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(products)
       .where(and(eq(products.id, id), eq(products.vendorId, vendorId)));
-    return result.rowsAffected > 0;
+    return result.rowCount > 0;
   }
 
   // Customer operations
