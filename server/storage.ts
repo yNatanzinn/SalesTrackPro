@@ -38,6 +38,7 @@ export interface IStorage {
   createSale(sale: InsertSale, items: InsertSaleItem[], vendorId: string): Promise<SaleWithItems>;
   updateSaleStatus(id: string, paymentStatus: string, isPaid: boolean, vendorId: string): Promise<Sale | undefined>;
   getPendingSales(vendorId: string): Promise<SaleWithItems[]>;
+  deleteSale(id: string, vendorId: string): Promise<boolean>;
   
   // Payment operations
   addPayment(payment: InsertPayment): Promise<Payment>;
@@ -273,6 +274,15 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(sales.id, id), eq(sales.vendorId, vendorId)))
       .returning();
     return updatedSale || undefined;
+  }
+
+  async deleteSale(id: string, vendorId: string): Promise<boolean> {
+    await db.delete(payments).where(eq(payments.saleId, id));
+    await db.delete(saleItems).where(eq(saleItems.saleId, id));
+    const result = await db
+      .delete(sales)
+      .where(and(eq(sales.id, id), eq(sales.vendorId, vendorId)));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   async getPendingSales(vendorId: string): Promise<SaleWithItems[]> {

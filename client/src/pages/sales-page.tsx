@@ -9,7 +9,7 @@ import { ProductSelection } from "@/components/product-selection";
 import { ShoppingCart } from "@/components/shopping-cart";
 import { PartialPaymentModal } from "@/components/partial-payment-modal";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ShoppingCart as CartIcon, Package, Clock, CheckCircle, ArrowLeft } from "lucide-react";
+import { ShoppingCart as CartIcon, Package, Clock, CheckCircle, ArrowLeft, Trash2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -90,6 +90,29 @@ export default function SalesPage() {
       toast({
         title: "Erro",
         description: "Falha ao marcar venda como paga.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete sale mutation
+  const deleteSaleMutation = useMutation({
+    mutationFn: async (saleId: string) => {
+      await apiRequest("DELETE", `/api/sales/${saleId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/sales"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/sales/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics/stats"] });
+      toast({
+        title: "Venda excluída",
+        description: "A venda foi excluída com sucesso.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir a venda.",
         variant: "destructive",
       });
     },
@@ -356,6 +379,37 @@ export default function SalesPage() {
                           >
                             Pag. Parcial
                           </Button>
+                          
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                data-testid={`button-delete-pending-${sale.id}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir Venda</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir esta venda pendente?
+                                  Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteSaleMutation.mutate(sale.id)}
+                                  disabled={deleteSaleMutation.isPending}
+                                  className="bg-destructive hover:bg-destructive/90"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </CardContent>
                     </Card>
@@ -423,7 +477,7 @@ export default function SalesPage() {
                       </div>
 
                       {/* Sale Items */}
-                      <div className="p-3 bg-muted/50 rounded-lg">
+                      <div className="p-3 bg-muted/50 rounded-lg mb-3">
                         <p className="text-sm font-medium mb-2">Itens vendidos:</p>
                         <div className="space-y-1">
                           {sale.items.map((item) => (
@@ -434,6 +488,40 @@ export default function SalesPage() {
                           ))}
                         </div>
                       </div>
+
+                      {/* Delete Button */}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="w-full"
+                            data-testid={`button-delete-sale-${sale.id}`}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Excluir Venda
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir Venda</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir esta venda?
+                              Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteSaleMutation.mutate(sale.id)}
+                              disabled={deleteSaleMutation.isPending}
+                              className="bg-destructive hover:bg-destructive/90"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </CardContent>
                   </Card>
                 ))}

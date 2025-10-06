@@ -146,6 +146,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/sales/:id", requireAuth, async (req: any, res) => {
+    try {
+      const success = await storage.deleteSale(req.params.id, req.user.id);
+      if (!success) {
+        return res.status(404).json({ message: "Sale not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete sale" });
+    }
+  });
+
   // Payment routes
   app.post("/api/payments", requireAuth, async (req: any, res) => {
     try {
