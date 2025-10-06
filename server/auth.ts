@@ -65,21 +65,22 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const { username, password, displayName, adminUsername, adminPassword } = req.body;
+      const { username, password, displayName } = req.body;
 
-      // Check if this is the first user (admin registration)
-      const existingUsers = await storage.getUserByUsername("Neitan");
+      // Check if any users exist
+      const allUsers = await storage.getAllUsers();
       
-      if (!existingUsers) {
-        // First user registration - must be Neitan
-        if (username !== "Neitan" || password !== "#Frank781") {
-          return res.status(400).json({ message: "Invalid admin credentials" });
+      if (allUsers.length === 0) {
+        // First user registration - becomes admin automatically
+        const existingUser = await storage.getUserByUsername(username);
+        if (existingUser) {
+          return res.status(400).json({ message: "Username already exists" });
         }
         
         const user = await storage.createUser({
           username,
           password: await hashPassword(password),
-          displayName: displayName || "Neitan",
+          displayName: displayName || username,
           isAdmin: true,
         });
 
@@ -90,9 +91,9 @@ export function setupAuth(app: Express) {
         return;
       }
 
-      // For subsequent registrations, verify admin credentials
-      if (adminUsername !== "Neitan" || adminPassword !== "#Frank781") {
-        return res.status(403).json({ message: "Only Neitan can create new users" });
+      // For subsequent registrations, user must be an authenticated admin
+      if (!req.isAuthenticated() || !req.user?.isAdmin) {
+        return res.status(403).json({ message: "Only administrators can create new users" });
       }
 
       const existingUser = await storage.getUserByUsername(username);

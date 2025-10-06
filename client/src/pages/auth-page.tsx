@@ -14,9 +14,7 @@ export default function AuthPage() {
   const [registerForm, setRegisterForm] = useState({ 
     username: "", 
     password: "", 
-    displayName: "",
-    adminUsername: "",
-    adminPassword: ""
+    displayName: ""
   });
 
   // Redirect if user is already logged in
@@ -105,10 +103,7 @@ export default function AuthPage() {
                 <CardHeader>
                   <CardTitle>Registrar novo usuário</CardTitle>
                   <CardDescription>
-                    {registerForm.username === "Neitan" ? 
-                      "Configure a conta administrativa" : 
-                      "Apenas o administrador Neitan pode criar novos usuários"
-                    }
+                    Crie sua conta para começar a usar o sistema
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -146,38 +141,6 @@ export default function AuthPage() {
                         data-testid="input-display-name"
                       />
                     </div>
-                    
-                    {registerForm.username !== "Neitan" && (
-                      <>
-                        <div className="border-t pt-4 space-y-4">
-                          <p className="text-sm text-muted-foreground">
-                            Credenciais do administrador (obrigatório):
-                          </p>
-                          <div className="space-y-2">
-                            <Label htmlFor="admin-username">Usuário Admin</Label>
-                            <Input
-                              id="admin-username"
-                              type="text"
-                              value={registerForm.adminUsername}
-                              onChange={(e) => setRegisterForm({ ...registerForm, adminUsername: e.target.value })}
-                              required
-                              data-testid="input-admin-username"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="admin-password">Senha Admin</Label>
-                            <Input
-                              id="admin-password"
-                              type="password"
-                              value={registerForm.adminPassword}
-                              onChange={(e) => setRegisterForm({ ...registerForm, adminPassword: e.target.value })}
-                              required
-                              data-testid="input-admin-password"
-                            />
-                          </div>
-                        </div>
-                      </>
-                    )}
                     
                     <Button 
                       type="submit" 
