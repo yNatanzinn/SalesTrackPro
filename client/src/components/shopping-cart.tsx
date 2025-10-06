@@ -20,7 +20,7 @@ interface ShoppingCartProps {
   onCheckout: (data: {
     customerName?: string;
     customerId?: string;
-    paymentMethod: string;
+    paymentMethod?: string;
     cardType?: string;
     isPaid: boolean;
   }) => void;

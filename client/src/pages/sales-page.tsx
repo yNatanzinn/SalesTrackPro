@@ -80,7 +80,7 @@ export default function SalesPage() {
   // Mark sale as paid mutation
   const markAsPaidMutation = useMutation({
     mutationFn: async (data: { saleId: string; paymentMethod?: string }) => {
-      await apiRequest("PUT", `/api/sales/${saleId}/status`, {
+      await apiRequest("PUT", `/api/sales/${data.saleId}/status`, {
         paymentStatus: "paid",
         isPaid: true,
         paymentMethod: data.paymentMethod,
@@ -167,7 +167,7 @@ export default function SalesPage() {
   const handleCheckout = (checkoutData: {
     customerName?: string;
     customerId?: string;
-    paymentMethod: string;
+    paymentMethod?: string;
     cardType?: string;
     isPaid: boolean;
   }) => {
