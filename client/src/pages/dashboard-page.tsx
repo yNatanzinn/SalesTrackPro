@@ -25,6 +25,8 @@ export default function DashboardPage() {
   const { theme, setTheme } = useTheme();
   const [, setLocation] = useLocation();
   const [period, setPeriod] = useState("week");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
   const [partialPaymentModal, setPartialPaymentModal] = useState<{
     isOpen: boolean;
     sale: SaleWithItems | null;
@@ -36,6 +38,17 @@ export default function DashboardPage() {
   const getDateRange = (period: string) => {
     const now = new Date();
     let startDate: Date;
+    
+    if (period === "custom") {
+      if (customStartDate && customEndDate) {
+        return { 
+          startDate: new Date(customStartDate).toISOString(), 
+          endDate: new Date(customEndDate + "T23:59:59").toISOString() 
+        };
+      } else {
+        return { startDate: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), endDate: now.toISOString() };
+      }
+    }
     
     switch (period) {
       case "today":
@@ -54,7 +67,7 @@ export default function DashboardPage() {
     return { startDate: startDate.toISOString(), endDate: now.toISOString() };
   };
 
-  const dateRange = useMemo(() => getDateRange(period), [period]);
+  const dateRange = useMemo(() => getDateRange(period), [period, customStartDate, customEndDate]);
 
   // Fetch analytics data
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -167,7 +180,13 @@ export default function DashboardPage() {
           <FinancialOverview 
             stats={stats} 
             period={period} 
-            onPeriodChange={setPeriod} 
+            onPeriodChange={setPeriod}
+            customStartDate={customStartDate}
+            customEndDate={customEndDate}
+            onCustomDateChange={(start, end) => {
+              setCustomStartDate(start);
+              setCustomEndDate(end);
+            }}
           />
         )}
 

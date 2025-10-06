@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, TrendingUp, Clock, DollarSign } from "lucide-react";
 
 interface FinancialOverviewProps {
@@ -13,9 +14,19 @@ interface FinancialOverviewProps {
   };
   period: string;
   onPeriodChange: (period: string) => void;
+  customStartDate?: string;
+  customEndDate?: string;
+  onCustomDateChange?: (startDate: string, endDate: string) => void;
 }
 
-export function FinancialOverview({ stats, period, onPeriodChange }: FinancialOverviewProps) {
+export function FinancialOverview({ 
+  stats, 
+  period, 
+  onPeriodChange, 
+  customStartDate, 
+  customEndDate, 
+  onCustomDateChange 
+}: FinancialOverviewProps) {
   const [valuesVisible, setValuesVisible] = useState(true);
 
   const formatCurrency = (value: number) => {
@@ -33,29 +44,55 @@ export function FinancialOverview({ stats, period, onPeriodChange }: FinancialOv
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Resumo Financeiro</h2>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setValuesVisible(!valuesVisible)}
-            data-testid="button-toggle-visibility"
-          >
-            {valuesVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-          </Button>
-          <Select value={period} onValueChange={onPeriodChange}>
-            <SelectTrigger className="w-[140px]" data-testid="select-period">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Hoje</SelectItem>
-              <SelectItem value="week">Esta Semana</SelectItem>
-              <SelectItem value="month">Este Mês</SelectItem>
-              <SelectItem value="custom">Personalizado</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="flex flex-col space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Resumo Financeiro</h2>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setValuesVisible(!valuesVisible)}
+              data-testid="button-toggle-visibility"
+            >
+              {valuesVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </Button>
+            <Select value={period} onValueChange={onPeriodChange}>
+              <SelectTrigger className="w-[140px]" data-testid="select-period">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="week">Esta Semana</SelectItem>
+                <SelectItem value="month">Este Mês</SelectItem>
+                <SelectItem value="custom">Personalizado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+        
+        {period === "custom" && onCustomDateChange && (
+          <div className="flex items-center space-x-3">
+            <div className="flex-1">
+              <Input
+                type="date"
+                value={customStartDate || ""}
+                onChange={(e) => onCustomDateChange(e.target.value, customEndDate || "")}
+                data-testid="input-start-date"
+                className="w-full"
+              />
+            </div>
+            <span className="text-muted-foreground">até</span>
+            <div className="flex-1">
+              <Input
+                type="date"
+                value={customEndDate || ""}
+                onChange={(e) => onCustomDateChange(customStartDate || "", e.target.value)}
+                data-testid="input-end-date"
+                className="w-full"
+              />
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
