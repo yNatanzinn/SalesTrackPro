@@ -336,9 +336,6 @@ export default function DashboardPage() {
                     <p className="text-lg font-bold text-primary" data-testid={`text-product-price-${product.id}`}>
                       {formatCurrency(Number(product.price))}
                     </p>
-                    <p className="text-xs text-muted-foreground" data-testid={`text-product-stock-${product.id}`}>
-                      Est: {product.stock}
-                    </p>
                   </CardContent>
                 </Card>
               ))}

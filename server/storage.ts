@@ -123,7 +123,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(products)
       .where(and(eq(products.id, id), eq(products.vendorId, vendorId)));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Customer operations
@@ -161,15 +161,13 @@ export class DatabaseStorage implements IStorage {
 
   // Sale operations
   async getSales(vendorId: string, startDate?: Date, endDate?: Date): Promise<SaleWithItems[]> {
-    let whereCondition = eq(sales.vendorId, vendorId);
-    
-    if (startDate && endDate) {
-      whereCondition = and(
-        eq(sales.vendorId, vendorId),
-        gte(sales.createdAt, startDate),
-        lte(sales.createdAt, endDate)
-      );
-    }
+    let whereCondition = startDate && endDate 
+      ? and(
+          eq(sales.vendorId, vendorId),
+          gte(sales.createdAt, startDate),
+          lte(sales.createdAt, endDate)
+        )!
+      : eq(sales.vendorId, vendorId);
 
     const salesData = await db
       .select()
@@ -187,7 +185,7 @@ export class DatabaseStorage implements IStorage {
         .leftJoin(products, eq(saleItems.productId, products.id))
         .where(eq(saleItems.saleId, saleData.sales.id));
 
-      const payments = await db
+      const salePayments = await db
         .select()
         .from(payments)
         .where(eq(payments.saleId, saleData.sales.id));
@@ -198,7 +196,7 @@ export class DatabaseStorage implements IStorage {
           ...item.sale_items,
           product: item.products!
         })),
-        payments,
+        payments: salePayments,
         customer: saleData.customers || undefined
       });
     }
@@ -221,7 +219,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(products, eq(saleItems.productId, products.id))
       .where(eq(saleItems.saleId, id));
 
-    const payments = await db
+    const salePayments = await db
       .select()
       .from(payments)
       .where(eq(payments.saleId, id));
@@ -232,7 +230,7 @@ export class DatabaseStorage implements IStorage {
         ...item.sale_items,
         product: item.products!
       })),
-      payments,
+      payments: salePayments,
       customer: saleData.customers || undefined
     };
   }
@@ -299,7 +297,7 @@ export class DatabaseStorage implements IStorage {
         .leftJoin(products, eq(saleItems.productId, products.id))
         .where(eq(saleItems.saleId, saleData.sales.id));
 
-      const payments = await db
+      const salePayments = await db
         .select()
         .from(payments)
         .where(eq(payments.saleId, saleData.sales.id));
@@ -310,7 +308,7 @@ export class DatabaseStorage implements IStorage {
           ...item.sale_items,
           product: item.products!
         })),
-        payments,
+        payments: salePayments,
         customer: saleData.customers || undefined
       });
     }
@@ -344,15 +342,13 @@ export class DatabaseStorage implements IStorage {
     dailySales: { date: string; total: number }[];
     productSales: { productName: string; quantity: number; total: number }[];
   }> {
-    let whereCondition = eq(sales.vendorId, vendorId);
-    
-    if (startDate && endDate) {
-      whereCondition = and(
-        eq(sales.vendorId, vendorId),
-        gte(sales.createdAt, startDate),
-        lte(sales.createdAt, endDate)
-      );
-    }
+    let whereCondition = startDate && endDate 
+      ? and(
+          eq(sales.vendorId, vendorId),
+          gte(sales.createdAt, startDate),
+          lte(sales.createdAt, endDate)
+        )!
+      : eq(sales.vendorId, vendorId);
 
     // Get basic stats
     const [totalStats] = await db

@@ -41,7 +41,6 @@ export const products = pgTable("products", {
   vendorId: varchar("vendor_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  stock: integer("stock").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

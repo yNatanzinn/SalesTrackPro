@@ -88,25 +88,13 @@ export function ProductSelection({ onAddToCart }: ProductSelectionProps) {
                   {product.name}
                 </h3>
                 
-                <p className="text-lg font-bold text-primary mb-2" data-testid={`product-price-${product.id}`}>
+                <p className="text-lg font-bold text-primary mb-3" data-testid={`product-price-${product.id}`}>
                   {formatCurrency(Number(product.price))}
                 </p>
-                
-                <div className="flex items-center justify-between mb-3">
-                  <Badge variant={product.stock > 0 ? "default" : "destructive"} className="text-xs">
-                    Est: {product.stock}
-                  </Badge>
-                  {product.stock === 0 && (
-                    <Badge variant="destructive" className="text-xs">
-                      Esgotado
-                    </Badge>
-                  )}
-                </div>
                 
                 <Button
                   size="sm"
                   onClick={() => onAddToCart(product)}
-                  disabled={product.stock === 0}
                   className="w-full"
                   data-testid={`button-add-to-cart-${product.id}`}
                 >

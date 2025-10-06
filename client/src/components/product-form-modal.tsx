@@ -24,7 +24,6 @@ export function ProductFormModal({
   const [formData, setFormData] = useState<InsertProduct>({
     name: "",
     price: "0",
-    stock: 0,
   });
 
   useEffect(() => {
@@ -32,13 +31,11 @@ export function ProductFormModal({
       setFormData({
         name: product.name,
         price: product.price,
-        stock: product.stock || 0,
       });
     } else {
       setFormData({
         name: "",
         price: "0",
-        stock: 0,
       });
     }
   }, [product, isOpen]);
@@ -52,7 +49,6 @@ export function ProductFormModal({
     setFormData({
       name: "",
       price: "0",
-      stock: 0,
     });
     onClose();
   };
@@ -91,19 +87,6 @@ export function ProductFormModal({
               placeholder="0,00"
               required
               data-testid="input-product-price"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="product-stock">Estoque</Label>
-            <Input
-              id="product-stock"
-              type="number"
-              min="0"
-              value={formData.stock}
-              onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
-              placeholder="0"
-              data-testid="input-product-stock"
             />
           </div>
           

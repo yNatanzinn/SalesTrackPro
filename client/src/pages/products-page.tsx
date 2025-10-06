@@ -167,47 +167,14 @@ export default function ProductsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
                 <Package className="w-4 h-4 text-primary" />
               </div>
               <p className="text-2xl font-bold" data-testid="text-total-products">{products.length}</p>
-              <p className="text-sm text-muted-foreground">Total</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Package className="w-4 h-4 text-primary" />
-              </div>
-              <p className="text-2xl font-bold" data-testid="text-in-stock">
-                {products.filter(p => p.stock > 0).length}
-              </p>
-              <p className="text-sm text-muted-foreground">Em Estoque</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="w-8 h-8 bg-destructive/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Package className="w-4 h-4 text-destructive" />
-              </div>
-              <p className="text-2xl font-bold" data-testid="text-out-of-stock">
-                {products.filter(p => p.stock === 0).length}
-              </p>
-              <p className="text-sm text-muted-foreground">Esgotados</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Package className="w-4 h-4 text-accent" />
-              </div>
-              <p className="text-2xl font-bold" data-testid="text-low-stock">
-                {products.filter(p => p.stock > 0 && p.stock <= 5).length}
-              </p>
-              <p className="text-sm text-muted-foreground">Baixo Estoque</p>
+              <p className="text-sm text-muted-foreground">Total de Produtos</p>
             </CardContent>
           </Card>
         </div>
@@ -291,25 +258,6 @@ export default function ProductsPage() {
                   <p className="text-2xl font-bold text-primary mb-3" data-testid={`product-price-${product.id}`}>
                     {formatCurrency(Number(product.price))}
                   </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <Badge 
-                      variant={product.stock > 5 ? "default" : product.stock > 0 ? "secondary" : "destructive"}
-                      data-testid={`product-stock-${product.id}`}
-                    >
-                      Estoque: {product.stock}
-                    </Badge>
-                    {product.stock <= 5 && product.stock > 0 && (
-                      <Badge variant="outline" className="text-accent">
-                        Baixo Estoque
-                      </Badge>
-                    )}
-                    {product.stock === 0 && (
-                      <Badge variant="destructive">
-                        Esgotado
-                      </Badge>
-                    )}
-                  </div>
                   
                   <div className="mt-4 text-sm text-muted-foreground">
                     <p>Cadastrado em: {new Date(product.createdAt!).toLocaleDateString('pt-BR')}</p>
