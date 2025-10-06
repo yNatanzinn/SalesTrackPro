@@ -1,5 +1,5 @@
 {
   "name": "rest-express",
-  "main": "dist/index.js",
+  "main": "server/index.js",
   "compatibility_date": "2025-10-06"
 }
