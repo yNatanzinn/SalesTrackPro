@@ -50,18 +50,17 @@ export function ShoppingCart({
   const total = items.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
 
   const handleCheckout = () => {
-    if (!paymentMethod) return;
-
     onCheckout({
       customerName: selectedCustomer ? selectedCustomer.name : customerName,
       customerId: selectedCustomer?.id,
-      paymentMethod: paymentMethod === "credit" || paymentMethod === "debit" ? cardType : paymentMethod,
+      paymentMethod: paymentMethod ? (paymentMethod === "credit" || paymentMethod === "debit" ? cardType : paymentMethod) : undefined,
       isPaid: paymentStatus === "paid",
     });
   };
 
-  const canCheckout = items.length > 0 && paymentMethod && 
-    (paymentMethod !== "credit" && paymentMethod !== "debit" || cardType) &&
+  const canCheckout = items.length > 0 && 
+    (paymentStatus === "pending" || (paymentStatus === "paid" && paymentMethod)) &&
+    (!paymentMethod || (paymentMethod !== "credit" && paymentMethod !== "debit" || cardType)) &&
     (paymentStatus === "paid" || (paymentStatus === "pending" && (customerName || selectedCustomer)));
 
   if (items.length === 0) {
@@ -171,52 +170,61 @@ export function ShoppingCart({
             </Select>
           </div>
 
-          {/* Customer Information (only for pending payments) */}
-          {paymentStatus === "pending" && (
-            <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
-              <Label>Informações do Cliente</Label>
-              
-              <CustomerSearch
-                onCustomerSelect={setSelectedCustomer}
-                placeholder="Buscar cliente existente..."
-              />
-              
-              {!selectedCustomer && (
-                <div>
-                  <Label htmlFor="customer-name">Nome do Cliente</Label>
-                  <Input
-                    id="customer-name"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Digite o nome do cliente"
-                    data-testid="input-customer-name"
-                  />
-                </div>
-              )}
-              
-              {selectedCustomer && (
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <p className="font-medium">{selectedCustomer.name}</p>
-                  {selectedCustomer.email && (
-                    <p className="text-sm text-muted-foreground">{selectedCustomer.email}</p>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedCustomer(null)}
-                    className="mt-2"
-                    data-testid="button-clear-customer"
-                  >
-                    Limpar seleção
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Customer Information */}
+          <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+            <Label>
+              Informações do Cliente
+              {paymentStatus === "paid" && <span className="text-muted-foreground text-sm ml-2">(Opcional)</span>}
+              {paymentStatus === "pending" && <span className="text-destructive text-sm ml-2">*</span>}
+            </Label>
+            
+            <CustomerSearch
+              onCustomerSelect={setSelectedCustomer}
+              placeholder="Buscar cliente existente..."
+            />
+            
+            {!selectedCustomer && (
+              <div>
+                <Label htmlFor="customer-name">
+                  Nome do Cliente
+                  {paymentStatus === "paid" && <span className="text-muted-foreground text-sm ml-2">(Opcional)</span>}
+                </Label>
+                <Input
+                  id="customer-name"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Digite o nome do cliente"
+                  data-testid="input-customer-name"
+                />
+              </div>
+            )}
+            
+            {selectedCustomer && (
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <p className="font-medium">{selectedCustomer.name}</p>
+                {selectedCustomer.email && (
+                  <p className="text-sm text-muted-foreground">{selectedCustomer.email}</p>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedCustomer(null)}
+                  className="mt-2"
+                  data-testid="button-clear-customer"
+                >
+                  Limpar seleção
+                </Button>
+              </div>
+            )}
+          </div>
 
           {/* Payment Method */}
           <div>
-            <Label>Método de Pagamento</Label>
+            <Label>
+              Método de Pagamento
+              {paymentStatus === "pending" && <span className="text-muted-foreground text-sm ml-2">(Opcional)</span>}
+              {paymentStatus === "paid" && <span className="text-destructive text-sm ml-2">*</span>}
+            </Label>
             <Select value={paymentMethod} onValueChange={setPaymentMethod}>
               <SelectTrigger data-testid="select-payment-method">
                 <SelectValue placeholder="Selecione o método" />

@@ -36,7 +36,7 @@ export interface IStorage {
   getSales(vendorId: string, startDate?: Date, endDate?: Date): Promise<SaleWithItems[]>;
   getSale(id: string, vendorId: string): Promise<SaleWithItems | undefined>;
   createSale(sale: InsertSale, items: InsertSaleItem[], vendorId: string): Promise<SaleWithItems>;
-  updateSaleStatus(id: string, paymentStatus: string, isPaid: boolean, vendorId: string): Promise<Sale | undefined>;
+  updateSaleStatus(id: string, paymentStatus: string, isPaid: boolean, vendorId: string, paymentMethod?: string): Promise<Sale | undefined>;
   getPendingSales(vendorId: string): Promise<SaleWithItems[]>;
   deleteSale(id: string, vendorId: string): Promise<boolean>;
   
@@ -267,10 +267,14 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateSaleStatus(id: string, paymentStatus: string, isPaid: boolean, vendorId: string): Promise<Sale | undefined> {
+  async updateSaleStatus(id: string, paymentStatus: string, isPaid: boolean, vendorId: string, paymentMethod?: string): Promise<Sale | undefined> {
+    const updateData: any = { paymentStatus, isPaid, updatedAt: new Date() };
+    if (paymentMethod !== undefined) {
+      updateData.paymentMethod = paymentMethod;
+    }
     const [updatedSale] = await db
       .update(sales)
-      .set({ paymentStatus, isPaid, updatedAt: new Date() })
+      .set(updateData)
       .where(and(eq(sales.id, id), eq(sales.vendorId, vendorId)))
       .returning();
     return updatedSale || undefined;

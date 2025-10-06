@@ -4,6 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { ProductSelection } from "@/components/product-selection";
 import { ShoppingCart } from "@/components/shopping-cart";
@@ -27,6 +30,11 @@ export default function SalesPage() {
     isOpen: boolean;
     sale: SaleWithItems | null;
   }>({ isOpen: false, sale: null });
+  const [markPaidModal, setMarkPaidModal] = useState<{
+    isOpen: boolean;
+    sale: SaleWithItems | null;
+  }>({ isOpen: false, sale: null });
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -71,10 +79,11 @@ export default function SalesPage() {
 
   // Mark sale as paid mutation
   const markAsPaidMutation = useMutation({
-    mutationFn: async (saleId: string) => {
+    mutationFn: async (data: { saleId: string; paymentMethod?: string }) => {
       await apiRequest("PUT", `/api/sales/${saleId}/status`, {
         paymentStatus: "paid",
         isPaid: true,
+        paymentMethod: data.paymentMethod,
       });
     },
     onSuccess: () => {
@@ -334,42 +343,17 @@ export default function SalesPage() {
                         </div>
 
                         <div className="flex items-center space-x-2">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button 
-                                size="sm" 
-                                className="flex-1"
-                                data-testid={`button-mark-paid-${sale.id}`}
-                              >
-                                Marcar como Pago
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Confirmar Pagamento</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja marcar esta venda como totalmente paga?
-                                  <br />
-                                  <strong>Valor total: {formatCurrency(Number(sale.total))}</strong>
-                                  {totalPaid > 0 && (
-                                    <>
-                                      <br />
-                                      <span>Já foi pago: {formatCurrency(totalPaid)}</span>
-                                    </>
-                                  )}
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => markAsPaidMutation.mutate(sale.id)}
-                                  disabled={markAsPaidMutation.isPending}
-                                >
-                                  Confirmar
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <Button 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={() => {
+                              setMarkPaidModal({ isOpen: true, sale });
+                              setSelectedPaymentMethod(sale.paymentMethod || "");
+                            }}
+                            data-testid={`button-mark-paid-${sale.id}`}
+                          >
+                            Marcar como Pago
+                          </Button>
                           
                           <Button 
                             variant="outline" 
@@ -540,6 +524,76 @@ export default function SalesPage() {
         onClose={() => setPartialPaymentModal({ isOpen: false, sale: null })}
         sale={partialPaymentModal.sale}
       />
+
+      {/* Mark as Paid Modal */}
+      <Dialog open={markPaidModal.isOpen} onOpenChange={(open) => {
+        if (!open) {
+          setMarkPaidModal({ isOpen: false, sale: null });
+          setSelectedPaymentMethod("");
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Marcar como Pago</DialogTitle>
+          </DialogHeader>
+          {markPaidModal.sale && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Registrar o pagamento completo desta venda.
+              </p>
+              <div>
+                <Label>Cliente</Label>
+                <p className="font-medium">{markPaidModal.sale.customerName || "Cliente Anônimo"}</p>
+              </div>
+              <div>
+                <Label>Valor Total</Label>
+                <p className="font-medium">{formatCurrency(Number(markPaidModal.sale.total))}</p>
+              </div>
+              <div>
+                <Label htmlFor="payment-method-select">Método de Pagamento</Label>
+                <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
+                  <SelectTrigger id="payment-method-select" data-testid="select-mark-paid-method">
+                    <SelectValue placeholder="Selecione o método" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pix">PIX</SelectItem>
+                    <SelectItem value="credit">Cartão Crédito</SelectItem>
+                    <SelectItem value="debit">Cartão Débito</SelectItem>
+                    <SelectItem value="cash">Dinheiro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setMarkPaidModal({ isOpen: false, sale: null });
+                setSelectedPaymentMethod("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (markPaidModal.sale) {
+                  markAsPaidMutation.mutate({
+                    saleId: markPaidModal.sale.id,
+                    paymentMethod: selectedPaymentMethod || undefined,
+                  });
+                  setMarkPaidModal({ isOpen: false, sale: null });
+                  setSelectedPaymentMethod("");
+                }
+              }}
+              disabled={markAsPaidMutation.isPending || !selectedPaymentMethod}
+              data-testid="button-confirm-mark-paid"
+            >
+              {markAsPaidMutation.isPending ? "Processando..." : "Confirmar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

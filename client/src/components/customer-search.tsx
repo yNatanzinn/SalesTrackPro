@@ -16,7 +16,16 @@ export function CustomerSearch({ onCustomerSelect, placeholder = "Buscar cliente
   const [showResults, setShowResults] = useState(false);
 
   const { data: searchResults = [], isLoading } = useQuery<Customer[]>({
-    queryKey: ["/api/customers/search", { q: searchTerm }],
+    queryKey: ["/api/customers/search", searchTerm],
+    queryFn: async () => {
+      const res = await fetch(`/api/customers/search?q=${encodeURIComponent(searchTerm)}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to search customers");
+      }
+      return await res.json();
+    },
     enabled: searchTerm.length >= 2,
   });
 

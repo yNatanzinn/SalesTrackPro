@@ -135,8 +135,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/sales/:id/status", requireAuth, async (req: any, res) => {
     try {
-      const { paymentStatus, isPaid } = req.body;
-      const sale = await storage.updateSaleStatus(req.params.id, paymentStatus, isPaid, req.user.id);
+      const { paymentStatus, isPaid, paymentMethod } = req.body;
+      const sale = await storage.updateSaleStatus(req.params.id, paymentStatus, isPaid, req.user.id, paymentMethod);
       if (!sale) {
         return res.status(404).json({ message: "Sale not found" });
       }
